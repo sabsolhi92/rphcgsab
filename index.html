@@ -10,8 +10,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2canvas for image/PDF export -->
+    
+    <!-- html2canvas and jsPDF for export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         body {
@@ -49,7 +51,6 @@
             background: linear-gradient(to right, #fdf4ff, #ffffff);
         }
         
-        /* Styles for the RPH Export Template */
         .rph-table {
             width: 100%;
             border-collapse: collapse;
@@ -62,7 +63,7 @@
             padding: 8px;
         }
         .rph-header-bg {
-            background-color: #e2efda; /* Light green from screenshot */
+            background-color: #e2efda;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -122,7 +123,6 @@
     </div>
 
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-64 bg-white shadow-xl lg:shadow-none z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full border-r border-gray-100">
-        
         <div class="h-20 flex items-center border-b border-gray-100 px-6 hidden lg:flex mt-4 lg:mt-0">
             <div class="flex items-center gap-3 w-full">
                 <img src="logosab.png" alt="Logo" class="w-10 h-10 rounded-full shadow-md object-cover bg-purple-50 border border-purple-100" onerror="this.src='https://placehold.co/100x100/a855f7/ffffff?text=CS'">
@@ -145,7 +145,7 @@
             </a>
 
             <a href="#" onclick="showContent('minggu-rph')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer" id="nav-minggu-rph">
-                <span class="font-medium">Minggu RPH</span>
+                <span class="font-medium">Rekod RPH</span>
             </a>
 
             <a href="#" onclick="showContent('program-cuti')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer" id="nav-program-cuti">
@@ -182,7 +182,6 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto w-full pt-16 lg:pt-0 bg-background relative flex flex-col">
-        
         <div class="bg-white pt-8 pb-4 px-8 flex items-center justify-between content-header border-b border-gray-100">
             <h2 class="text-3xl font-bold text-primary" id="content-title">Dashboard</h2>
             <div class="text-sm text-right">
@@ -287,18 +286,18 @@
                 </div>
             </div>
 
-            <!-- Minggu RPH Section -->
+            <!-- Rekod RPH Section (Takwim 43 Minggu Grid 3 Kolum & Cuti Melintang) -->
             <div id="content-minggu-rph" class="content-section hidden h-full flex flex-col space-y-4">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
                     <div>
-                        <h3 class="text-xl font-bold text-gray-800">Minggu dan Tarikh Persekolahan Sesi 2026</h3>
-                        <p class="text-sm text-gray-500">Klik pada minggu untuk membuka rekod RPH harian (Isnin - Jumaat).</p>
+                        <h3 class="text-xl font-bold text-gray-800">Rekod RPH & Takwim Sesi 2026</h3>
+                        <p class="text-sm text-gray-500">Klik pada minggu untuk membuka rekod RPH harian (Isnin - Jumaat) serta tetapan muat turun.</p>
                     </div>
                     <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full">Takwim 2026</span>
                 </div>
 
                 <div class="flex-1 overflow-y-auto pb-4">
-                    <div id="takwim-grid-container" class="space-y-4">
+                    <div id="takwim-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     </div>
                 </div>
             </div>
@@ -470,7 +469,6 @@
 
             <!-- Rekod Pergerakan Section -->
             <div id="content-rekod-pergerakan" class="content-section hidden h-full flex flex-col space-y-6">
-                <!-- Kekal Sama -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Rekod Pergerakan & Keberadaan Guru</h3>
@@ -482,7 +480,6 @@
                     </div>
                 </div>
 
-                <!-- Tab 1: Borang Pergerakan -->
                 <div id="pergerakan-borang-view" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1 flex flex-col space-y-4 overflow-y-auto">
                     <h4 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2"><i class="fas fa-edit text-primary"></i> Borang Keberadaan & Tugas</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -523,7 +520,6 @@
                     </div>
                 </div>
 
-                <!-- Tab 2: Senarai Rekod Pergerakan -->
                 <div id="pergerakan-senarai-view" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1 flex flex-col space-y-4 overflow-y-auto">
                     <div class="flex items-center justify-between border-b pb-3">
                         <h4 class="font-bold text-gray-800 text-base"><i class="fas fa-history text-primary mr-2"></i> Senarai Rekod Keberadaan & Tugas</h4>
@@ -534,7 +530,7 @@
                 </div>
             </div>
 
-            <!-- Unified RPH Builder Section (Replaces Bil 1, Bil 2, Bil 3 views) -->
+            <!-- Unified RPH Builder Section -->
             <div id="content-rph-builder" class="content-section hidden h-full flex flex-col space-y-4">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 shrink-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -548,7 +544,6 @@
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Minggu</label>
                             <select id="rph-minggu" onchange="updateRPHDateAndLoadClasses()" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary font-medium">
-                                <!-- Populated by JS -->
                             </select>
                         </div>
                         <div>
@@ -570,114 +565,37 @@
 
                 <div class="flex items-center justify-between mt-2">
                     <h4 class="font-bold text-gray-700">Senarai RPH (<span id="rph-count">0</span> Subjek)</h4>
-                    <button onclick="generateAllRPHImages()" class="bg-primary hover:bg-purple-600 text-white font-medium px-5 py-2 rounded-xl transition flex items-center gap-2 text-sm shadow-sm">
-                        <i class="fas fa-file-export"></i> Jana Semua RPH (PNG)
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="saveAllRphRecords()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2 rounded-xl transition flex items-center gap-2 text-sm shadow-sm">
+                            <i class="fas fa-save"></i> Simpan RPH
+                        </button>
+                        <button onclick="generateAllRPHImages()" class="bg-primary hover:bg-purple-600 text-white font-medium px-5 py-2 rounded-xl transition flex items-center gap-2 text-sm shadow-sm">
+                            <i class="fas fa-file-export"></i> Jana Semua RPH (PNG)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto pb-6">
                     <div id="rph-forms-container" class="space-y-6">
-                        <!-- RPH forms will be generated here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Jadual Personal Section -->
+            <!-- Jadual Personal Section (Connected to jadualpersonal.html) -->
             <div id="content-jadual-personal" class="content-section hidden h-full flex flex-col space-y-4">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between shrink-0">
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Jadual Personal & Urusan Peribadi</h3>
-                        <p class="text-sm text-gray-500">Urus tugas luar, program sekolah, dan senarai tugasan harian (To-Do List).</p>
+                        <p class="text-sm text-gray-500">Urus tugas luar, program sekolah, dan takwim peribadi anda.</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="switchPersonalTab('tugas-luar')" id="tab-tugas-btn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-white transition shadow-sm">Tugas Luar</button>
-                        <button onclick="switchPersonalTab('program-sekolah')" id="tab-program-btn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">Program Sekolah</button>
-                        <button onclick="switchPersonalTab('todo-list')" id="tab-todo-btn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">To-Do List</button>
+                        <a href="jadualpersonal.html" target="_blank" class="px-5 py-2.5 bg-primary hover:bg-purple-600 text-white font-semibold rounded-xl transition text-sm flex items-center gap-2 shadow-sm">
+                            <i class="fas fa-external-link-alt"></i> Buka Penuh Halaman
+                        </a>
                     </div>
                 </div>
-
-                <!-- Tab 1: Tugas Luar -->
-                <div id="personal-tugas-view" class="personal-tab-content flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto pb-4">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4 h-fit">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Tambah Tugas Luar</h4>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tarikh</label>
-                            <input type="date" id="tugas-date" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Masa</label>
-                            <input type="text" id="tugas-time" placeholder="Cth: 08:00 - 12:00 Tengah Hari" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tempat</label>
-                            <input type="text" id="tugas-place" placeholder="Cth: PPD Miri" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Keterangan Tugas</label>
-                            <textarea id="tugas-desc" placeholder="Butiran tugas..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary h-20 resize-none"></textarea>
-                        </div>
-                        <button onclick="saveTugasLuar()" class="w-full bg-primary hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition text-sm">Simpan Tugas Luar</button>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-4 overflow-y-auto">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Senarai Tugas Luar</h4>
-                        <div id="tugas-luar-list" class="space-y-3"></div>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Program Sekolah -->
-                <div id="personal-program-view" class="personal-tab-content hidden flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto pb-4">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4 h-fit">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Tambah Program Sekolah</h4>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tarikh</label>
-                            <input type="date" id="prog-date" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Nama Program</label>
-                            <input type="text" id="prog-name" placeholder="Cth: Kejohanan Sukan Tahunan" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Sasaran / Peranan</label>
-                            <input type="text" id="prog-role" placeholder="Cth: Guru Rumah Sukan Merah" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Catatan</label>
-                            <textarea id="prog-note" placeholder="Catatan program..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary h-20 resize-none"></textarea>
-                        </div>
-                        <button onclick="saveProgramSekolah()" class="w-full bg-primary hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition text-sm">Simpan Program</button>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-4 overflow-y-auto">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Senarai Program Sekolah</h4>
-                        <div id="program-sekolah-list" class="space-y-3"></div>
-                    </div>
-                </div>
-
-                <!-- Tab 3: To-Do List -->
-                <div id="personal-todo-view" class="personal-tab-content hidden flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto pb-4">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4 h-fit">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Tambah Tugasan Baru</h4>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Perkara / Tugasan</label>
-                            <input type="text" id="todo-task" placeholder="Cth: Semak buku latihan BM 3BD" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tarikh Akhir</label>
-                            <input type="date" id="todo-deadline" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Keutamaan</label>
-                            <select id="todo-priority" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary">
-                                <option value="BIASA">Biasa</option>
-                                <option value="PENTING">Penting</option>
-                                <option value="SEGERA">Segera!</option>
-                            </select>
-                        </div>
-                        <button onclick="saveTodoItem()" class="w-full bg-primary hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition text-sm">Tambah Tugasan</button>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-4 overflow-y-auto">
-                        <h4 class="font-bold text-gray-800 border-b pb-2">Senarai To-Do List</h4>
-                        <div id="todo-list-container" class="space-y-3"></div>
-                    </div>
+                <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-2 overflow-hidden flex flex-col">
+                    <iframe src="jadualpersonal.html" class="w-full flex-1 border-0 rounded-xl" title="Jadual Personal"></iframe>
                 </div>
             </div>
 
@@ -686,7 +604,6 @@
 
     <!-- Week Details Modal (Rekod RPH Harian) -->
     <div id="week-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <!-- Content sama seperti sedia ada -->
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="bg-purple-50 p-6 border-b border-gray-100 flex items-center justify-between">
                 <div>
@@ -698,9 +615,8 @@
                 </button>
             </div>
             
-            <div class="p-6 overflow-y-auto space-y-6 flex-1" id="printable-week-record">
-                <!-- Takwim Info -->
-                <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+            <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-white" id="printable-week-record">
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
                     <h4 class="text-xs font-bold text-purple-800 uppercase tracking-wider mb-1">Catatan Takwim Mingguan</h4>
                     <p id="modal-week-note" class="text-sm text-gray-700 whitespace-pre-line">-</p>
                 </div>
@@ -718,16 +634,13 @@
                 </div>
             </div>
 
-            <div class="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                <button onclick="exportWeekRecordPDF()" class="px-5 py-2.5 bg-primary hover:bg-purple-600 text-white font-semibold rounded-xl transition text-sm flex items-center gap-2">
-                    <i class="fas fa-file-pdf"></i> Jana Keseluruhan PDF (Gambar)
-                </button>
-                <button onclick="closeWeekModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 font-semibold text-gray-700 rounded-xl transition text-sm">Tutup</button>
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
+                <button onclick="closeWeekModal()" class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 rounded-xl transition text-sm shadow-sm">Tutup Paparan</button>
             </div>
         </div>
     </div>
 
-    <!-- Export Wrapper for html2canvas (Sistem RPH) -->
+    <!-- Export Wrapper for html2canvas -->
     <div id="export-wrapper" class="fixed top-[-9999px] left-[-9999px] z-[-1]">
         <div id="rph-export-template" class="bg-white p-8" style="width: 1000px; min-height: 1200px;">
             <div class="flex items-center mb-6">
@@ -738,7 +651,6 @@
                 </div>
             </div>
 
-            <!-- Table based on Screenshot template -->
             <table class="rph-table">
                 <tbody>
                     <tr>
@@ -914,50 +826,433 @@
         };
 
         const dskpData = {
-            "Bahasa Melayu": {
-                tema: ["Keluarga Bahagia — Unit 1: Hari Keluarga", "Amalan Gaya Hidup Sihat", "Kelestarian Alam"],
-                sk: ["1.1 Mendengar dan memberikan respons", "2.1 Asas membaca dan memahami", "3.1 Asas menulis"],
-                sp: ["1.1.1 Mengecam dan berisyarat perkataan/frasa", "2.1.1 Membaca ayat mudah dengan sebutan yang betul", "3.1.1 Menulis ayat mudah secara mekanis"]
+            "Muzik": {
+                tema: [
+                    "Unit 1: Senja Nan Indah",
+                    "Unit 2: Warna-warni Kek Cawan",
+                    "Unit 3: Beg Cantik Menawan",
+                    "Unit 4: Bunga Gergasi",
+                    "Unit 5: Secawan Kopi Manis",
+                    "Unit 6: Larian Riang Ria",
+                    "Unit 7: Indahnya Dasar Laut",
+                    "Unit 8: Helo, Helo Apa Khabar?",
+                    "Unit 9: Kota Ceria",
+                    "Unit 10: Harum Mewangi"
+                ],
+                sk: [
+                    "1.1 Menyanyikan lagu daripada pelbagai repertoir",
+                    "1.4 Memainkan rekorder secara ensembel",
+                    "1.5 Menghayati nilai murni menerusi aktiviti muzikal",
+                    "2.1 Menghasilkan idea muzikal kreatif",
+                    "3.1 Menghayati muzik daripada pelbagai repertoir",
+                    "4.1 Membaca dan menulis notasi muzik"
+                ],
+                sp: [
+                    "1.1.1 Bernyanyi dengan pic yang betul (kawalan not pendek)",
+                    "1.1.2 Bernyanyi lagu pusingan",
+                    "1.1.3 Bernyanyi solfa do, re, mi, fa, so (menyanyi solfa dalam pelbagai corak irama)",
+                    "1.1.4 Mengaplikasi legato dan staccato dalam nyanyian",
+                    "1.1.5 Bernyanyi dengan dinamik (lembut p, kuat f, sederhana kuat mf)",
+                    "1.1.6 Bernyanyi dengan sebutan yang betul",
+                    "1.4.1 Memainkan not G, A, B, D' dan C' dengan ton yang baik",
+                    "1.4.2 Memainkan rekorder berdasarkan skor",
+                    "1.4.3 Memainkan rekorder mengikut tempo",
+                    "1.4.4 Mengaplikasikan dinamik dalam permainan rekorder",
+                    "1.5.1 Mengamalkan nilai murni menerusi aktiviti muzikal",
+                    "2.1.1 Menghasilkan kesan bunyi menggunakan perkusi",
+                    "2.1.2 Mencipta corak irama mudah",
+                    "2.1.3 Mencipta dan menyanyikan melodi mudah",
+                    "3.1.1 Mengenal pasti muzik yang didengar",
+                    "4.1.1 Menulis simbol muzik (baluk, garis bar, klef trebel, garis penamat)",
+                    "4.1.2 Menama dan menulis not G, A, B, C', D' pada baluk",
+                    "4.1.3 Menulis nilai not dan tanda rehat",
+                    "4.1.4 Menulis meter (2/4 dan 4/4)"
+                ]
             },
             "TMK": {
-                tema: ["Modul 1: Asas Komputer", "Modul 2: Internet"],
-                sk: ["1.0 Mengenal komponen komputer", "2.0 Melayari internet selamat"],
-                sp: ["1.1 Menamakan perkakasan komputer", "2.1 Mencari maklumat menggunakan enjin carian"]
+                tema: [
+                    "Unit 1: Penggunaan Teknologi",
+                    "Unit 2: Maklumat dan Komunikasi Dalam Talian",
+                    "Unit 3: Multimedia",
+                    "Unit 4: Penggunaan Data",
+                    "Unit 5: Pengaturcaraan"
+                ],
+                sk: [
+                    "1.1 Penggunaan Teknologi Dalam Kehidupan Harian",
+                    "2.1 Perkongsian Maklumat dan Komunikasi Secara Interaktif Menggunakan Internet Dalam Komuniti Maya",
+                    "3.1 Elemen Multimedia Interaktif dalam Penghasilan Blog",
+                    "4.1 Data Asas Perisian MS Excel",
+                    "5.1 Scratch"
+                ],
+                sp: [
+                    "1.1.1 Mengenal pasti teknologi peranti terkini.",
+                    "1.1.2 Menerangkan fungsi teknologi peranti terkini.",
+                    "1.1.3 Menjelaskan kepentingan teknologi peranti terkini dalam kehidupan harian.",
+                    "1.1.4 Mematuhi peraturan, prosedur dan keselamatan semasa menggunakan peranti terkini.",
+                    "1.1.5 Menggunakan teknologi peranti terkini untuk berinteraksi, berkomunikasi dan berkongsi maklumat secara maya.",
+                    "2.1.1 Mengenali pasti komuniti maya.",
+                    "2.1.2 Menyatakan maksud komuniti maya.",
+                    "2.1.3 Memuat naik dan memuat turun pelbagai maklumat dalam komuniti maya.",
+                    "2.1.4 Merancang dan mereka bentuk dokumentari maklumat terpilih dalam komuniti maya.",
+                    "2.1.5 Berkongsi dokumentari secara digital dalam komuniti maya.",
+                    "2.1.6 Membentangkan dokumentari digital secara interaktif dalam komuniti maya.",
+                    "3.1.1 Mengenal pasti perisian penyuntingan grafik dan audio.",
+                    "3.1.2 Menerangkan fungsi perisian penyuntingan grafik dan audio.",
+                    "3.1.3 Menggunakan aplikasi penyuntingan grafik dan aplikasi audio dalam penghasilan blog.",
+                    "3.1.4 Membangunkan persembahan blog interaktif menggunakan idea pilihan.",
+                    "3.1.5 Membentangkan hasil persembahan blog interaktif.",
+                    "3.1.6 Memuatnaik blog di web.",
+                    "4.1.1 Mengenali format data dan ikon hamparan kerja (spreadsheet) perisian MS Excel.",
+                    "4.1.2 Menerangkan jenis, elemen dan bentuk data dalam perisian MS Excel.",
+                    "4.1.3 Menerangkan kegunaan data perisian MS Excel dalam kehidupan harian.",
+                    "4.1.4 Membangunkan data MS Excel bagi kegunaan peribadi.",
+                    "4.1.5 Menyampaikan maklumat dengan disokong oleh data MS Excel.",
+                    "5.1.1 Mengenal pengaturcaraan Scratch.",
+                    "5.1.2 Menerangkan fungsi asas dalam program Scratch.",
+                    "5.1.3 Membina permainan mudah berdasarkan program Scratch.",
+                    "5.1.4 Menggunakan Scratch secara web editor atau memuat turun untuk beroperasi secara offline di komputer.",
+                    "5.1.5 Berkongsi hasil kerja atau projek dengan rakan lain."
+                ]
             },
-            "Muzik": {
-                tema: ["Modul 1: Pengalaman Muzikal"],
-                sk: ["1.1 Menyanyi pelbagai himpunan lagu"],
-                sp: ["1.1.1 Menyanyi dengan pic yang betul"]
+            "Bahasa Melayu Tahun 3": {
+                tema: [
+                    "Tema 1: Kekeluargaan — Unit 1: Seronok Bersama-sama Keluarga",
+                    "Tema 1: Kekeluargaan — Unit 2: Rajinnya Mak Cik Ina",
+                    "Tema 1: Kekeluargaan — Unit 3: Jom ke Rumah Pak Cik Man",
+                    "Tema 2: Kemasyarakatan — Unit 4: Sepakat Membawa Berkat",
+                    "Tema 2: Kemasyarakatan — Unit 5: Seronoknya Hidup Berjiran",
+                    "Tema 2: Kemasyarakatan — Unit 6: Kami Prihatin",
+                    "Tema 3: Kesihatan dan Kebersihan — Unit 7: Saya Sihat Saya Gembira",
+                    "Tema 3: Kesihatan dan Kebersihan — Unit 8: Alam Bersih Hidup Bahagia",
+                    "Tema 3: Kesihatan dan Kebersihan — Unit 9: Gaya Hidup Sihat",
+                    "Tema 4: Keselamatan — Unit 10: Rumahku Selamat",
+                    "Tema 4: Keselamatan — Unit 11: Keselamatan Kebakaran",
+                    "Tema 4: Keselamatan — Unit 12: Jaga Keselamatan Diri",
+                    "Tema 5: Perpaduan — Unit 13: Hidup Bermuafakat",
+                    "Tema 5: Perpaduan — Unit 14: Perpaduan Teras Kesejahteraan",
+                    "Tema 5: Perpaduan — Unit 15: Hidup Harmoni",
+                    "Tema 6: Kebudayaan, Kesenian dan Estetika — Unit 16: Indahnya Budaya Kita",
+                    "Tema 6: Kebudayaan, Kesenian dan Estetika — Unit 17: Seni Warisan Kita",
+                    "Tema 6: Kebudayaan, Kesenian dan Estetika — Unit 18: Indahnya Seni",
+                    "Tema 7: Jati Diri, Patriotisme dan Kewarganegaraan — Unit 19: Jati Diri",
+                    "Tema 7: Jati Diri, Patriotisme dan Kewarganegaraan — Unit 20: Cinta akan Negara",
+                    "Tema 7: Jati Diri, Patriotisme dan Kewarganegaraan — Unit 21: Saya Anak Malaysia",
+                    "Tema 8: Kelestarian Alam — Unit 22: Alam Bersih Hidup Sihat",
+                    "Tema 8: Kelestarian Alam — Unit 23: Cintai Alam Sekitar",
+                    "Tema 8: Kelestarian Alam — Unit 24: Hutan Bakau",
+                    "Tema 9: Pertanian dan Penternakan — Unit 25: Mari Bertani",
+                    "Tema 9: Pertanian dan Penternakan — Unit 26: Penternak Muda",
+                    "Tema 9: Pertanian dan Penternakan — Unit 27: Alatan Pertanian Moden",
+                    "Tema 10: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 28: Bijak Berniaga",
+                    "Tema 10: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 29: Saya Suka Berniaga",
+                    "Tema 10: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 30: Berjimat Amalan Mulia"
+                ],
+                sk: [
+                    "1.1 Mendengar/melihat, mengecam sebutan/isyarat serta memberikan respons",
+                    "1.2 Mendengar/melihat, mengecam sebutan/berisyarat untuk menyampaikan maklumat",
+                    "2.1 Asas membaca (lisan/isyarat) dan memahami bahan yang dibaca",
+                    "2.2 Membaca (lisan/isyarat), memahami dan menaakul bahan grafik dan bukan grafik",
+                    "2.3 Membaca (lisan/isyarat) dan mengapresiasi karya sastera dan bukan sastera",
+                    "3.1 Asas menulis",
+                    "3.2 Menulis perkataan, frasa dan ayat yang bermakna",
+                    "3.3 Menghasilkan penulisan naratif dan bukan naratif",
+                    "4.1 Mengaplikasikan unsur keindahan dan kesantunan bahasa dalam bahan sastera",
+                    "4.2 Menghayati keindahan dan kesantunan bahasa dalam bahan sastera",
+                    "4.3 Menghasilkan bahan sastera dengan menyerapkan keindahan dan kesantunan bahasa",
+                    "5.1 Memahami dan menggunakan golongan kata mengikut konteks",
+                    "5.2 Memahami dan menggunakan pembentukan kata mengikut konteks",
+                    "5.3 Memahami dan membina ayat mengikut konteks"
+                ],
+                sp: [
+                    "1.1.1 Mendengar/melihat, mengecam sebutan/isyarat dan menyebut/berisyarat (i) ayat tunggal (ii) ayat majmuk",
+                    "1.1.2 Mendengar sebutan/mengecam isyarat, memahami dan memberikan respons terhadap (i) suruhan dan permintaan (ii) silaan dan larangan",
+                    "1.1.3 Mendengar/melihat, mentafsir dan memberi respons terhadap (i) soalan bertumpu (ii) soalan bercapah",
+                    "1.2.1 Bertutur/berisyarat untuk menjelaskan dan menilai sesuatu perkara secara bertatasusila",
+                    "1.2.2 Menjelaskan dan membanding beza maklumat tersurat menggunakan idea kritis dan kreatif",
+                    "1.2.3 Bersoal jawab secara komunikasi seluruh untuk mendapatkan dan menyampaikan maklumat",
+                    "2.1.1 Membaca (lisan/isyarat) dengan isyarat/sebutan yang betul (i) ayat tunggal dan majmuk (ii) perenggan (iii) petikan",
+                    "2.1.2 Membaca (lisan/isyarat) dengan intonasi sesuai dan memahami (i) pelbagai jenis ayat (ii) perenggan (iii) petikan",
+                    "2.2.1 Membaca, memahami dan mengecam (i) maksud kosa kata (ii) idea utama dan sampingan (iii) idea keseluruhan",
+                    "2.3.1 Membaca, mengenal pasti dan menerangkan kandungan teks (i) label (ii) manual (iii) cerita (iv) pantun",
+                    "2.3.2 Membaca dan mengapresiasikan karya sastera dan bukan sastera (i) label (ii) manual (iii) cerita (iv) pantun",
+                    "3.1.1 Menulis secara mekanis tulisan berangkai (i) huruf (ii) perkataan (iii) frasa",
+                    "3.2.1 Membina dan menulis (i) ayat (ii) perenggan",
+                    "3.2.2 Menghasilkan jawapan pemahaman secara kritis berdasarkan soalan (i) bertumpu (ii) bercapah",
+                    "3.2.3 Membanding bezakan dan mencatat maklumat tentang sesuatu perkara",
+                    "3.2.4 Menulis sesuatu yang diimlakkan (i) ayat",
+                    "3.3.1 Menghasilkan kerangka dan penulisan karangan naratif dan bukan naratif (i) berpandu (ii) separa berpandu",
+                    "3.3.2 Mengedit dan memurnikan hasil penulisan (i) ejaan, tanda baca, imbuhan (ii) penggunaan kata (iii) struktur ayat",
+                    "4.1.1 Bercerita secara komunikasi seluruh dengan gaya bahasa indah (i) simpulan bahasa (ii) bandingan semacam (iii) pepatah",
+                    "4.2.1 Melafazkan/mengisyaratkan pantun yang mengandungi bahasa yang indah dan menjelaskan maksud",
+                    "4.2.2 Menyanyikan/mengisyaratkan lagu mengikut irama kanak-kanak/rakyat serta menjelaskan bahasa indah",
+                    "4.2.3 Melagukan syair dan mendeklamasikan sajak serta memahami maksud (i) syair (ii) sajak",
+                    "4.3.1 Mencipta bahan sastera secara berpandu (i) pantun empat kerat (ii) sajak",
+                    "4.3.2 Mengubahsuai cerita yang mempunyai unsur pengajaran secara berpandu",
+                    "4.3.3 Mengubah suai seni kata lagu secara berpandu",
+                    "5.1.1 Memahami dan menggunakan golongan kata nama (i) kata nama am dan khas (ii) ganti nama (iii) penjodoh bilangan",
+                    "5.1.2 Memahami dan menggunakan kata kerja (i) aktif transitif & tak transitif (ii) pasif",
+                    "5.1.3 Memahami dan menggunakan kata adjektif (i) jarak (ii) perasaan (iii) pancaindera",
+                    "5.1.4 Memahami dan menggunakan kata tugas (i) hubung (ii) sendi (iii) arah (iv) tanya (v) perintah (vi) seru (vii) pemeri (viii) penguat (ix) nafi (x) bantu (xi) bilangan",
+                    "5.2.1 Memahami dan menggunakan kata (i) kata dasar (ii) berimbuhan awalan (iii) berimbuhan akhiran",
+                    "5.2.2 Memahami dan menggunakan kata majmuk",
+                    "5.2.3 Memahami dan menggunakan kata ganda (i) penuh (ii) separa (iii) berentak",
+                    "5.3.1 Memahami dan membina ayat (i) seruan (ii) perintah (iii) tanya dengan kata tanya (iv) tanya tanpa kata tanya",
+                    "5.3.2 Memahami dan menggunakan ayat (i) ayat tunggal (ii) ayat majmuk"
+                ]
+            },
+            "Bahasa Melayu Tahun 5": {
+                tema: [
+                    "Tema 1: Kekeluargaan — Unit 1: Harapan Keluarga",
+                    "Tema 1: Kekeluargaan — Unit 2: Keluargaku Hebat",
+                    "Tema 1: Kekeluargaan — Unit 3: Hubungan yang Erat",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 4: Jagalah Dirimu",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 5: Persekitaran yang Sihat",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 6: Sayangi Dirimu",
+                    "Tema 3: Utamakan Keselamatan — Unit 7: Fikir Dahulu Sebelum Buat",
+                    "Tema 3: Utamakan Keselamatan — Unit 8: Seronoknya ke Sekolah",
+                    "Tema 3: Utamakan Keselamatan — Unit 9: Jangan Cuai",
+                    "Tema 4: Kemasyarakatan — Unit 10: Komuniti Sepakat",
+                    "Tema 4: Kemasyarakatan — Unit 11: Baktiku untukmu",
+                    "Tema 4: Kemasyarakatan — Unit 12: Bersatu Teguh Bercerai Roboh",
+                    "Tema 5: Perpaduan — Unit 13: Muafakat Membawa Berkat",
+                    "Tema 5: Perpaduan — Unit 14: Berganding Bahu",
+                    "Tema 5: Perpaduan — Unit 15: Semangat Kekitaan",
+                    "Tema 6: Kelestarian Alam — Unit 16: Indahnya Negeriku",
+                    "Tema 6: Kelestarian Alam — Unit 17: Indahnya Alamku",
+                    "Tema 6: Kelestarian Alam — Unit 18: Kita dan Alam",
+                    "Tema 7: Pertanian dan Penternakan — Unit 19: Pertanian ialah Perniagaan",
+                    "Tema 7: Pertanian dan Penternakan — Unit 20: Penternak Berjaya",
+                    "Tema 7: Pertanian dan Penternakan — Unit 21: Hasil Bumiku Bertuah",
+                    "Tema 8: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 22: Titik Peluh Kita",
+                    "Tema 8: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 23: Usaha Jaya",
+                    "Tema 8: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 24: Bijak Mengurus Wang",
+                    "Tema 9: Sains, Teknologi dan Inovasi — Unit 25: Sains dalam Kehidupan",
+                    "Tema 9: Sains, Teknologi dan Inovasi — Unit 26: Teknologi Terkini",
+                    "Tema 9: Sains, Teknologi dan Inovasi — Unit 27: Inovasi Ciptaanku",
+                    "Tema 10: Integriti — Unit 28: Bertanggungjawab",
+                    "Tema 10: Integriti — Unit 29: Patuhi Arahan",
+                    "Tema 10: Integriti — Unit 30: Indahnya Amalan Baik"
+                ],
+                sk: [
+                    "1.1 Mendengar atau mengecam isyarat serta memberikan respons semasa berkomunikasi",
+                    "1.2 Bertutur atau berisyarat untuk menyampaikan maklumat dan idea bagi pelbagai tujuan",
+                    "1.3 Bercerita dan menceritakan perkara yang didengar, ditonton dan dibaca",
+                    "2.1 Asas membaca secara lisan atau isyarat dan memahami",
+                    "2.2 Membaca secara lisan atau isyarat, memahami dan menaakul bahan multimedia",
+                    "2.3 Membaca secara lisan atau isyarat dan mengapresiasi karya sastera dan bukan sastera",
+                    "3.1 Asas menulis",
+                    "3.2 Menulis perkataan, frasa dan ayat yang bermakna",
+                    "3.3 Menghasilkan penulisan",
+                    "4.1 Mengaplikasikan unsur keindahan dan kesantunan bahasa dalam bahasa sastera",
+                    "4.2 Menghayati keindahan dan kesantunan bahasa dalam bahan sastera",
+                    "4.3 Menghasilkan bahan sastera dengan menyerapkan keindahan dan kesantunan bahasa",
+                    "5.1 Memahami dan menggunakan golongan kata mengikut konteks",
+                    "5.2 Memahami dan menggunakan bentuk kata mengikut konteks",
+                    "5.3 Memahami dan membina ayat mengikut konteks"
+                ],
+                sp: [
+                    "1.1.1 Mendengar atau melihat, mengecam sebutan atau isyarat dan menyebut atau mengisyarat semula ujaran dalam situasi formal",
+                    "1.1.2 Mendengar atau melihat, memahami dan memberikan respons terhadap maklumat yang dijarkan",
+                    "1.1.3 Mendengar atau melihat, mentafsir dan memberikan respons terhadap soalan secara kritis dan kreatif",
+                    "1.2.1 Bertutur atau berisyarat untuk menyatakan pertimbangan dan keputusan tentang bahan multimedia",
+                    "1.2.2 Bertutur atau berisyarat untuk menghuraikan maklumat tersurat dan tersirat secara kritis dan kreatif",
+                    "1.2.3 Bersoal jawab untuk menjana idea tentang sesuatu perkara",
+                    "1.3.1 Bercerita dengan sebutan atau isyarat yang betul dan gaya yang sesuai",
+                    "1.3.2 Menceritakan sesuatu perkara yang didengar, ditonton dan dibaca dengan sebutan atau isyarat yang betul",
+                    "2.1.1 Membaca secara lisan atau isyarat dan memahami maklumat tersurat dan tersirat untuk memberikan respons",
+                    "2.1.2 Membaca dan merujuk kamus serta media elektronik untuk mencari makna, perkataan dan meneliti ejaan yang tepat",
+                    "2.2.1 Membaca secara lisan atau isyarat dan memahami maklumat bahan multimedia untuk membuat pertimbangan dan keputusan",
+                    "2.3.1 Membaca secara lisan atau isyarat dan meneliti kandungan teks karya bukan sastera dan karya sastera untuk membuat rumusan",
+                    "2.3.2 Membaca secara lisan atau isyarat dan mempersembahkan karya dengan pelbagai bentuk penyampaian",
+                    "3.1.1 Menulis ayat dalam perenggan secara mekanis dalam bentuk tulisan berangkai",
+                    "3.2.1 Membina dan menulis ayat untuk menyatakan pendapat daripada sesuatu bahan multimedia",
+                    "3.2.2 Menghasilkan jawapan dengan memberikan alasan secara kritis dan kreatif",
+                    "3.2.3 Mencatatkan maklumat berdasarkan bahan yang dibaca, dilihat dan didengar",
+                    "3.2.4 Menulis teks prosa yang diimlakkan",
+                    "3.3.1 Mendraf dan menghasilkan penulisan berformat dan tidak berformat",
+                    "3.3.2 Mengedit dan memurnikan perenggan dari aspek ejaan, tanda baca, penggunaan imbuhan, penggunaan kata dan struktur ayat",
+                    "4.1.1 Bercerita atau berisyarat dan mengujarkan dialog yang mengandungi peribahasa dan bahasa yang santun",
+                    "4.2.1 Melafazkan atau mengisyaratkan syair secara komunikasi seluruh dan menyatakan idea keseluruhan syair",
+                    "4.2.2 Deklamasikan atau mengisyaratkan sajak secara komunikasi seluruh dan menyatakan maksud sajak",
+                    "4.3.1 Mengubah suai puisi dengan bahasa yang indah dan santun secara separa berpandu serta mempersembahkannya secara kreatif",
+                    "4.3.2 Mengubah suai cerita dengan bahasa yang indah dan santun serta mempersembahkannya secara kreatif",
+                    "4.3.3 Mengubah suai seni kata lagu dengan menggunakan diksi yang sesuai dan mempersembahkannya secara kreatif",
+                    "5.1.1 Memahami dan menggunakan kata nama mengikut konteks (i) kata nama am (ii) kata nama khas (iii) ganti nama (iv) penjodoh bilangan",
+                    "5.1.2 Memahami dan menggunakan kata kerja transitif dan kata kerja tak transitif mengikut konteks",
+                    "5.1.3 Memahami dan menggunakan pelbagai kata adjektif mengikut konteks",
+                    "5.1.4 Memahami dan menggunakan kata tugas mengikut konteks (i) kata pemeri (ii) kata penguat (iii) kata bantu",
+                    "5.2.1 Memahami dan menggunakan kata berimbuhan mengikut konteks (i) awalan (ii) akhiran (iii) apitan (iv) sisipan",
+                    "5.2.2 Memahami dan menggunakan kata majmuk mengikut konteks (i) bebas & mantap (ii) kiasan",
+                    "5.2.3 Memahami dan menggunakan kata ganda mengikut konteks (i) penuh (ii) separa (iii) berentak",
+                    "5.3.1 Memahami dan membina ayat tunggal dan ayat majmuk dengan peluasan subjek dan predikat",
+                    "5.3.2 Memahami dan membina pelbagai jenis ayat mengikut konteks (i) ayat seruan (ii) ayat perintah",
+                    "5.3.3 Memahami dan membina ayat aktif dan ayat pasif mengikut konteks",
+                    "5.3.4 Memahami dan membina ayat susunan biasa dan susunan songsang mengikut konteks"
+                ]
+            },
+            "Bahasa Melayu Tahun 6": {
+                tema: [
+                    "Tema 1: Kekeluargaan — Unit 1: Bakat Unik",
+                    "Tema 1: Kekeluargaan — Unit 2: Tanggungjawab Keluarga",
+                    "Tema 1: Kekeluargaan — Unit 3: Mari Mengembara",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 4: Badan Sihat Hidup Gembira",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 5: Kebersihan Asas Kesihatan",
+                    "Tema 2: Kesihatan dan Kebersihan — Unit 6: Amalan Cara Hidup Sihat",
+                    "Tema 3: Keselamatan — Unit 7: Keselamatan Diri Tanggungjawab Bersama",
+                    "Tema 3: Keselamatan — Unit 8: Keselamatan di Alam Siber",
+                    "Tema 3: Keselamatan — Unit 9: Awasi Keselamatan Diri",
+                    "Tema 4: Perpaduan — Unit 10: Berkat Perpaduan",
+                    "Tema 4: Perpaduan — Unit 11: Bagai Aur dengan Tebing",
+                    "Tema 4: Perpaduan — Unit 12: Bersama-sama Berpadu Tenaga",
+                    "Tema 5: Kebudayaan, Kesenian dan Estetika — Unit 13: Warisan Kesenian",
+                    "Tema 5: Kebudayaan, Kesenian dan Estetika — Unit 14: Cantiknya Budaya Bangsa",
+                    "Tema 5: Kebudayaan, Kesenian dan Estetika — Unit 15: Khazanah Berharga",
+                    "Tema 6: Sains, Teknologi dan Inovasi — Unit 16: Ajaibnya Sains",
+                    "Tema 6: Sains, Teknologi dan Inovasi — Unit 17: Teknologi Kreatif",
+                    "Tema 6: Sains, Teknologi dan Inovasi — Unit 18: Inovasi",
+                    "Tema 7: Kelestarian Alam — Unit 19: Indahnya Bumiku",
+                    "Tema 7: Kelestarian Alam — Unit 20: Sayangi Persekitaran Kita",
+                    "Tema 7: Kelestarian Alam — Unit 21: Alam Sejahtera",
+                    "Tema 8: Pertanian dan Penternakan — Unit 22: Petani Moden",
+                    "Tema 8: Pertanian dan Penternakan — Unit 23: Penternak Berjaya",
+                    "Tema 8: Pertanian dan Penternakan — Unit 24: Inovasi Pertanian dan Penternakan",
+                    "Tema 9: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 25: Menjanakan Pendapatan",
+                    "Tema 9: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 26: Usahawan Berjaya",
+                    "Tema 9: Ekonomi, Keusahawanan dan Pengurusan Kewangan — Unit 27: Mengurus Wang",
+                    "Tema 10: Integriti — Unit 28: Kejujuran",
+                    "Tema 10: Integriti — Unit 29: Prinsip Hidup",
+                    "Tema 10: Integriti — Unit 30: Amanah"
+                ],
+                sk: [
+                    "1.1 Mendengar atau mengecam isyarat serta memberikan respons semasa berkomunikasi",
+                    "1.2 Bertutur atau berisyarat untuk menyampaikan maklumat dan idea bagi pelbagai tujuan",
+                    "1.3 Bercerita dan menceritakan perkara yang didengar, ditonton dan dibaca",
+                    "2.1 Asas membaca secara lisan atau isyarat dan memahami",
+                    "2.2 Membaca secara lisan atau isyarat, memahami dan menaakul bahan multimedia",
+                    "2.3 Membaca secara lisan atau isyarat dan mengapresiasi karya sastera dan bukan sastera",
+                    "3.1 Asas menulis",
+                    "3.2 Menulis perkataan, frasa dan ayat yang bermakna",
+                    "3.3 Menghasilkan penulisan",
+                    "4.1 Mengaplikasikan unsur keindahan dan kesantunan bahasa dalam bahasa sastera",
+                    "4.2 Menghayati keindahan dan kesantunan bahasa dalam bahan sastera",
+                    "4.3 Menghasilkan bahan sastera dengan menyerapkan keindahan dan kesantunan bahasa",
+                    "5.1 Memahami dan menggunakan golongan kata mengikut konteks"
+                ],
+                sp: [
+                    "1.1.1 Mendengar atau melihat, mengecam sebutan atau isyarat dan menyebut atau mengisyarat semula ujaran dalam pelbagai situasi",
+                    "1.1.2 Mendengar atau melihat, memahami dan memberikan respons terhadap maklumat yang dijarkan",
+                    "1.1.3 Mendengar atau melihat, mentafsir dan memberikan respons terhadap pernyataan secara kritis dan kreatif",
+                    "1.2.1 Bertutur atau berisyarat untuk membuat rumusan dan ramalan tentang sesuatu perkara",
+                    "1.2.2 Menghujahkan maklumat yang tersurat dan tersirat dengan menggunakan idea yang kritis dan kreatif",
+                    "1.2.3 Bersoal jawab untuk membuat rumusan dan keputusan tentang sesuatu perkara",
+                    "1.3.1 Bercerita dengan sebutan atau isyarat yang betul, gaya dan ekspresi yang sesuai",
+                    "1.3.2 Menceritakan sesuatu perkara yang didengar, ditonton dan dibaca",
+                    "2.1.1 Membaca secara lisan atau isyarat, memahami dan mentafsir bahan sastera dan bahan bukan sastera",
+                    "2.1.2 Membaca dan merujuk kamus serta media elektronik untuk mencari makna, sebutan, ejaan dan penggunaan perkataan",
+                    "2.2.1 Membaca secara lisan atau isyarat, memahami dan menaakul bahan multimedia untuk membuat rumusan dan ramalan",
+                    "2.3.1 Membaca secara lisan atau isyarat dan menganalisis kandungan teks karya sastera dan bukan sastera",
+                    "2.3.2 Membaca secara lisan atau isyarat dan menghargai ilmu dan nilai daripada pelbagai bahan",
+                    "3.1.1 Menulis puisi secara mekanis dalam bentuk tulisan berangkai",
+                    "3.2.1 Membina dan menulis perenggan untuk menyatakan pendapat yang kritis dan kreatif",
+                    "3.2.2 Menghasilkan jawapan dengan memberikan cadangan secara kritis dan kreatif",
+                    "3.2.3 Mencatatkan maklumat dan menjana idea berdasarkan bahan",
+                    "3.2.4 Menulis teks prosa, dan teks puisi yang diimlakkan",
+                    "3.3.1 Menghasilkan penulisan berformat dan tidak berformat secara koheren dan kohesi",
+                    "3.3.2 Mengedit dan memurnikan teks",
+                    "4.1.1 Bercerita atau berisyarat dan mengujarkan dialog yang mengandungi peribahasa dan bahasa santun",
+                    "4.2.1 Melafazkan atau mengisyaratkan seloka dan menyatakan pengajaran",
+                    "4.2.2 Mempersembahkan puisi secara komunikasi seluruh dengan penuh penghayatan dan keindahan bahasa",
+                    "4.3.1 Menghasilkan puisi dengan bahasa yang indah dan santun berdasarkan bahan rangsangan",
+                    "4.3.2 Menghasilkan cerita dengan bahasa yang indah dan santun berdasarkan bahan rangsangan",
+                    "4.3.3 Menghasilkan seni kata lagu berdasarkan bahan rangsangan",
+                    "5.1.1 Memahami dan menggunakan kata nama mengikut konteks (i) kata nama am (ii) kata nama khas (iii) ganti nama (iv) penjodoh bilangan",
+                    "5.1.2 Memahami dan menggunakan kata kerja transitif dan kata kerja tak transitif mengikut konteks",
+                    "5.1.3 Memahami dan menggunakan pelbagai kata adjektif mengikut konteks",
+                    "5.1.4 Memahami dan menggunakan pelbagai kata tugas mengikut konteks"
+                ]
             }
         };
 
         const takwimData = [
-            { week: "Minggu 1", date: "12-16 Jan 2026", note: "Minggu Transisi" },
-            { week: "Minggu 2", date: "19-23 Jan 2026", note: "Minggu Transisi" },
-            { week: "Minggu 3", date: "26-30 Jan 2026", note: "Minggu Transisi" },
-            { week: "Minggu 4", date: "2-6 Feb 2026", note: "-" },
-            { week: "Minggu 5", date: "9-13 Feb 2026", note: "-" }
+            { type: 'week', week: "1", date: "12-16 Jan", note: "Minggu Transisi Tahun 1\nProgram Minggu 1" },
+            { type: 'week', week: "2", date: "19-23 Jan", note: "Minggu Transisi Tahun 1" },
+            { type: 'week', week: "3", date: "26-30 Jan", note: "Minggu Transisi Tahun" },
+            { type: 'week', week: "4", date: "2-6 Feb", note: "Minggu Transisi Tahun" },
+            { type: 'week', week: "5", date: "9-13 Feb", note: "" },
+            { type: 'week', week: "6", date: "16-20 Feb", note: "" },
+            { type: 'week', week: "7", date: "23-27 Feb", note: "" },
+            { type: 'week', week: "8", date: "2-6 Mac", note: "" },
+            { type: 'week', week: "9", date: "9-13 Mac", note: "" },
+            { type: 'week', week: "10", date: "16-20 Mac", note: "" },
+            { type: 'cuti', title: "CUTI PERTENGAHAN PENGGAL 1", date: "21-29 MAC 2026" },
+            { type: 'week', week: "11", date: "30 Mac- 3 April", note: "" },
+            { type: 'week', week: "12", date: "6-10 April", note: "" },
+            { type: 'week', week: "13", date: "13-17 April", note: "" },
+            { type: 'week', week: "14", date: "20-24 April", note: "" },
+            { type: 'week', week: "15", date: "27 April- 1 Mei", note: "" },
+            { type: 'week', week: "16", date: "4-8 Mei", note: "" },
+            { type: 'week', week: "17", date: "11-15 Mei", note: "" },
+            { type: 'week', week: "18", date: "18-22 Mei", note: "" },
+            { type: 'cuti', title: "CUTI PERTENGAHAN TAHUN", date: "23 MEI- 7 JUN 2026" },
+            { type: 'week', week: "19", date: "8-12 Jun", note: "" },
+            { type: 'week', week: "20", date: "15-19 Jun", note: "" },
+            { type: 'week', week: "21", date: "22-26 Jun", note: "" },
+            { type: 'week', week: "22", date: "29 Jun- 3 Julai", note: "" },
+            { type: 'week', week: "23", date: "6-10 Julai", note: "" },
+            { type: 'week', week: "24", date: "13-17 Julai", note: "" },
+            { type: 'week', week: "25", date: "20-24 Julai", note: "" },
+            { type: 'week', week: "26", date: "27-31 Julai", note: "" },
+            { type: 'week', week: "27", date: "3-7 Ogos", note: "" },
+            { type: 'week', week: "28", date: "10-14 Ogos", note: "" },
+            { type: 'week', week: "29", date: "17-21 Ogos", note: "" },
+            { type: 'week', week: "30", date: "24-28 Ogos", note: "" },
+            { type: 'cuti', title: "CUTI PERTENGAHAN PENGGAL 2", date: "29 OGOS- 6 SEPTEMBER 2026" },
+            { type: 'week', week: "31", date: "7-11 September", note: "" },
+            { type: 'week', week: "32", date: "14-18 September", note: "" },
+            { type: 'week', week: "33", date: "21-25 September", note: "" },
+            { type: 'week', week: "34", date: "28 Sept- 2 Okt", note: "" },
+            { type: 'week', week: "35", date: "5-9 Okt", note: "" },
+            { type: 'week', week: "36", date: "12-16 Okt", note: "" },
+            { type: 'week', week: "37", date: "19-23 Okt", note: "" },
+            { type: 'week', week: "38", date: "26-30 Okt", note: "" },
+            { type: 'week', week: "39", date: "2-6 Nov", note: "" },
+            { type: 'week', week: "40", date: "9-13 Nov", note: "" },
+            { type: 'week', week: "41", date: "16-20 Nov", note: "" },
+            { type: 'week', week: "42", date: "23-27 Nov", note: "" },
+            { type: 'week', week: "43", date: "30 Nov- 4 Dis", note: "" },
+            { type: 'cuti', title: "CUTI AKHIR PERSEKOLAHAN", date: "5 Disember 2026-31 Disember 2026" }
         ];
 
-        const weekStartDates = {
-            "Minggu 1": new Date(2026, 0, 12),
-            "Minggu 2": new Date(2026, 0, 19),
-            "Minggu 3": new Date(2026, 0, 26),
-            "Minggu 4": new Date(2026, 1, 2),
-            "Minggu 5": new Date(2026, 1, 9)
-        };
+        const weekStartDates = {};
+        takwimData.filter(t => t.type === 'week').forEach(t => {
+            const dateParts = t.date.split(' ')[0].split('-'); 
+            const day = parseInt(dateParts[0]);
+            const monthStr = t.date.toLowerCase();
+            let m = 0;
+            if(monthStr.includes('jan')) m = 0; 
+            else if(monthStr.includes('feb')) m = 1; 
+            else if(monthStr.includes('mac')) m = 2; 
+            else if(monthStr.includes('april') || monthStr.includes('apr')) m = 3; 
+            else if(monthStr.includes('mei')) m = 4; 
+            else if(monthStr.includes('jun')) m = 5; 
+            else if(monthStr.includes('jul')) m = 6; 
+            else if(monthStr.includes('ogos')) m = 7; 
+            else if(monthStr.includes('sep')) m = 8; 
+            else if(monthStr.includes('okt')) m = 9; 
+            else if(monthStr.includes('nov')) m = 10; 
+            else if(monthStr.includes('dis')) m = 11;
+            
+            weekStartDates[`Minggu ${t.week}`] = new Date(2026, m, day);
+        });
 
         let programRecords = [];
         let attendanceRecords = [
             { date: "2026-01-30", classCode: "6BD", attendanceMap: { 1: "HADIR", 2: "TAK HADIR" } }
         ];
         let movementRecords = [];
-        let tugasLuarRecords = [];
-        let programSekolahRecords = [];
-        let todoListRecords = [];
+        let savedRphRecords = [];
         let posterDataUrl = '';
 
-        // UI Core
         function updateTime() {
             const now = new Date();
             now.setFullYear(2026);
@@ -991,16 +1286,369 @@
                 renderAttendanceRecordsList();
             } else if (contentId === 'rekod-pergerakan') {
                 renderMovementRecordsList();
-            } else if (contentId === 'jadual-personal') {
-                renderTugasLuarList();
-                renderProgramSekolahList();
-                renderTodoList();
             }
         }
 
-        // ==========================================
-        // RPH BUILDER (GABUNGAN RPH BIL 1, 2, 3)
-        // ==========================================
+        function renderMovementRecordsList() {
+            const container = document.getElementById('movement-records-list');
+            if (!container) return;
+            if (movementRecords.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-6">Tiada rekod pergerakan atau keberadaan guru setakat ini.</p>';
+            }
+        }
+
+        function renderTakwimGrid() {
+            const container = document.getElementById('takwim-grid-container');
+            container.innerHTML = '';
+            
+            takwimData.forEach(item => {
+                if (item.type === 'week') {
+                    container.innerHTML += `
+                        <div onclick="openWeekModal('Minggu ${item.week}', '${item.date} 2026', \`${item.note}\`)" class="bg-[#1a5b73] hover:bg-[#14495c] text-white rounded-xl p-4 cursor-pointer transition shadow-sm flex flex-col items-center justify-center text-center h-28">
+                            <span class="font-bold text-lg mb-1 uppercase tracking-wide">MINGGU ${item.week}</span>
+                            <span class="text-xs text-blue-100 uppercase font-medium">${item.date}</span>
+                        </div>
+                    `;
+                } else if (item.type === 'cuti') {
+                    container.innerHTML += `
+                        <div class="col-span-1 md:col-span-3 bg-[#1a5b73] text-white rounded-xl p-4 shadow-sm flex flex-col items-center justify-center text-center h-24 border border-[#14495c]">
+                            <span class="font-bold text-lg mb-1 uppercase tracking-wider">${item.title}</span>
+                            <span class="text-xs text-blue-100 uppercase font-medium">${item.date}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function openWeekModal(weekStr, dateStr, noteStr) {
+            document.getElementById('modal-week-title').textContent = `Rekod RPH - ${weekStr}`;
+            document.getElementById('modal-week-date').textContent = dateStr;
+            document.getElementById('modal-week-note').textContent = noteStr || 'Tiada catatan takwim (Hari Persekolahan Biasa).';
+            
+            const dailyContainer = document.getElementById('modal-daily-rph-container');
+            let dailyHtml = '';
+            
+            ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'].forEach(hari => {
+                let bilPhase = 'bil1';
+                let wNum = parseInt(weekStr.replace('Minggu ', ''));
+                if(wNum >= 19 && wNum <= 34) bilPhase = 'bil2';
+                if(wNum >= 35) bilPhase = 'bil3';
+                
+                let slots = timetableData[bilPhase].days[hari.toLowerCase()] || [];
+                let classes = slots.filter(s => !['Persediaan', 'Perhimpunan', 'NILAM', 'Permata', 'B.Komputer', 'Kelab', 'Sukan', 'UB'].includes(s.class)).map(s => s.class + ' (' + s.subject + ')');
+                let uniqueClasses = [...new Set(classes)].join(', ') || 'Tiada PdPc teras direkodkan.';
+
+                const savedForDay = savedRphRecords.filter(r => r.minggu === weekStr && r.hari.toLowerCase() === hari.toLowerCase());
+
+                let badgeHtml = savedForDay.length > 0 ? 
+                    `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 uppercase tracking-wide"><i class="fas fa-check-circle mr-1"></i> ${savedForDay.length} RPH Disimpan</span>` :
+                    `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[9px] font-bold border border-emerald-200 uppercase tracking-wide">Semakan Sah</span>`;
+
+                dailyHtml += `
+                <div class="border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row justify-between md:items-center bg-white shadow-sm gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-sm text-gray-800 uppercase">${hari}</span>
+                            ${badgeHtml}
+                        </div>
+                        <p class="text-[11px] text-gray-500 leading-relaxed">${uniqueClasses}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 shrink-0 mt-2 md:mt-0">
+                        <button onclick="exportDailyRPHFromModal('${weekStr}', '${hari}', 'pdf')" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg text-[10px] font-bold transition border border-red-200 hover:border-red-600 flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-file-pdf"></i> Previu PDF
+                        </button>
+                        <button onclick="exportDailyRPHFromModal('${weekStr}', '${hari}', 'docx')" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white rounded-lg text-[10px] font-bold transition border border-blue-200 hover:border-blue-700 flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-file-word"></i> Muat Turun DOCX
+                        </button>
+                        <button onclick="exportDailyRPHFromModal('${weekStr}', '${hari}', 'png')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg text-[10px] font-bold transition border border-emerald-200 hover:border-emerald-600 flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-image"></i> Muat Turun PNG
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+            
+            dailyContainer.innerHTML = dailyHtml;
+
+            const pcContainer = document.getElementById('modal-week-pc-list');
+            const weekPcRecords = programRecords.filter(r => r.minggu === weekStr);
+            if(weekPcRecords.length > 0) {
+                pcContainer.innerHTML = weekPcRecords.map(r => `
+                <div class="border border-gray-100 rounded-xl p-3 bg-white flex flex-col gap-1">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-sm text-gray-800">${r.hari} (${r.tarikh})</span>
+                        <span class="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">${r.masa}</span>
+                    </div>
+                    <p class="text-[11px] text-gray-600">${r.catatan}</p>
+                </div>
+                `).join('');
+            } else {
+                pcContainer.innerHTML = '<p class="text-[11px] text-gray-400 italic">Tiada rekod program menangguhkan PdPc pada minggu ini.</p>';
+            }
+
+            document.getElementById('week-modal').classList.remove('hidden');
+        }
+
+        function closeWeekModal() {
+            document.getElementById('week-modal').classList.add('hidden');
+        }
+
+        async function exportDailyRPHFromModal(weekStr, hari, format) {
+            const savedForDay = savedRphRecords.filter(r => r.minggu === weekStr && r.hari.toLowerCase() === hari.toLowerCase());
+            if(savedForDay.length === 0) {
+                exportDailyRPH(hari, format, weekStr);
+                return;
+            }
+
+            showToast(`Memproses eksport ${format.toUpperCase()} untuk ${hari} (${weekStr})...`);
+
+            const startD = weekStartDates[weekStr];
+            let dStr = "-";
+            if (startD) {
+                let d = new Date(startD);
+                const dayOffsets = { isnin: 0, selasa: 1, rabu: 2, khamis: 3, jumaat: 4 };
+                d.setDate(d.getDate() + dayOffsets[hari.toLowerCase()]);
+                dStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+            }
+
+            const container = document.createElement('div');
+            container.style.width = '800px';
+            container.style.padding = '40px';
+            container.style.backgroundColor = '#ffffff';
+            container.style.color = '#000000';
+            container.style.fontFamily = 'Arial, sans-serif';
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '-9999px';
+
+            let html = `
+                <div style="text-align:center; margin-bottom: 25px; border-bottom: 3px solid #6b21a8; padding-bottom: 15px;">
+                    <h1 style="margin:0; font-size: 26px; color: #6b21a8; text-transform: uppercase; letter-spacing: 1px;">Rancangan Pengajaran Harian</h1>
+                    <h3 style="margin:8px 0 0 0; font-size: 16px; color: #374151;">SK Pendidikan Khas Miri</h3>
+                </div>
+                <div style="margin-bottom: 25px; display:flex; justify-content: space-between; font-size: 14px; background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                    <div><strong>MINGGU:</strong> ${weekStr.replace('Minggu ', '')}</div>
+                    <div><strong>HARI:</strong> <span style="text-transform:uppercase">${hari}</span></div>
+                    <div><strong>TARIKH:</strong> ${dStr}</div>
+                </div>
+            `;
+
+            savedForDay.forEach(r => {
+                let refleksiList = '';
+                const students = studentsData[r.classCode] || [];
+                students.forEach(st => {
+                    let note = r.refleksiMap[st.id] || 'Tiada catatan';
+                    refleksiList += `<li><strong>${st.name.split(' ')[0]}:</strong> ${note}</li>`;
+                });
+
+                if (r.tangguh) {
+                    html += `
+                    <div style="border: 1px solid #ef4444; margin-bottom: 20px; border-radius: 8px; overflow: hidden; background: #fef2f2;">
+                        <div style="background-color: #fee2e2; padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #f87171; display:flex; justify-content: space-between; font-size: 13px; color: #991b1b;">
+                            <span>KELAS: ${r.classCode}</span>
+                            <span>SUBJEK: ${r.subject}</span>
+                        </div>
+                        <div style="padding: 20px; text-align: center; color: #991b1b; font-weight: bold; text-transform: uppercase;">
+                            PdPc Ditangguhkan Kerana: ${r.tangguhReason}
+                        </div>
+                    </div>`;
+                } else {
+                    html += `
+                    <div style="border: 1px solid #d1d5db; margin-bottom: 20px; page-break-inside: avoid; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #fdf4ff; padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #d1d5db; display:flex; justify-content: space-between; font-size: 13px; color: #6b21a8;">
+                            <span>MASA: ${r.times.join(', ')}</span>
+                            <span>KELAS: ${r.classCode}</span>
+                            <span>SUBJEK: ${r.subject}</span>
+                        </div>
+                        <div style="padding: 15px;">
+                            <table style="width:100%; border-collapse: collapse; font-size: 13px; color: #374151;">
+                                <tr>
+                                    <td style="width: 160px; font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">TEMA / TAJUK</td>
+                                    <td style="padding: 6px 0;">: ${r.tema}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">STANDARD KANDUNGAN</td>
+                                    <td style="padding: 6px 0;">: ${r.sk}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">STANDARD PEMBELAJARAN</td>
+                                    <td style="padding: 6px 0;">: ${r.sp}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">OBJEKTIF</td>
+                                    <td style="padding: 6px 0;">: ${r.objektif}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">AKTIVITI PENGAJARAN</td>
+                                    <td style="padding: 6px 0; white-space: pre-line;">: ${r.aktiviti}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">REFLEKSI</td>
+                                    <td style="padding: 6px 0;"><ul style="margin:0; padding-left:15px;">${refleksiList}</ul></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>`;
+                }
+            });
+
+            container.innerHTML = html;
+            document.body.appendChild(container);
+
+            try {
+                if (format === 'png') {
+                    const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                    const link = document.createElement('a');
+                    link.download = `RPH_Disimpan_${weekStr.replace(/\s+/g,'_')}_${hari}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } else if (format === 'pdf') {
+                    if(!window.jspdf) { showToast("Ralat: Modul PDF tidak ditemui."); document.body.removeChild(container); return; }
+                    const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    pdf.addImage(imgData, 'JPEG', 0, 10, pdfWidth, pdfHeight);
+                    const blob = pdf.output('blob');
+                    window.open(URL.createObjectURL(blob), '_blank');
+                } else if (format === 'docx') {
+                    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>RPH Disimpan</title></head><body style='font-family: Arial, sans-serif;'>";
+                    const footer = "</body></html>";
+                    const blob = new Blob(['\ufeff', header + container.innerHTML + footer], { type: 'application/msword' });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `RPH_Disimpan_${weekStr.replace(/\s+/g,'_')}_${hari}.doc`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            } catch(e) {
+                console.error("Export Error:", e);
+                showToast("Ralat semasa menjana fail eksport.");
+            } finally {
+                document.body.removeChild(container);
+            }
+        }
+
+        async function exportDailyRPH(hari, format, weekStr) {
+            showToast(`Sila tunggu, sedang memproses fail ${format.toUpperCase()} untuk ${hari}...`);
+            
+            let wNum = parseInt(weekStr.replace('Minggu ', ''));
+            let bilPhase = 'bil1';
+            if(wNum >= 19 && wNum <= 34) bilPhase = 'bil2';
+            if(wNum >= 35) bilPhase = 'bil3';
+            
+            let slots = timetableData[bilPhase].days[hari.toLowerCase()] || [];
+            
+            const container = document.createElement('div');
+            container.style.width = '800px';
+            container.style.padding = '40px';
+            container.style.backgroundColor = '#ffffff';
+            container.style.color = '#000000';
+            container.style.fontFamily = 'Arial, sans-serif';
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '-9999px';
+            
+            const startD = weekStartDates[weekStr];
+            let dStr = "-";
+            if (startD) {
+                let d = new Date(startD);
+                const dayOffsets = { isnin: 0, selasa: 1, rabu: 2, khamis: 3, jumaat: 4 };
+                d.setDate(d.getDate() + dayOffsets[hari.toLowerCase()]);
+                dStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+            }
+
+            let html = `
+                <div style="text-align:center; margin-bottom: 25px; border-bottom: 3px solid #6b21a8; padding-bottom: 15px;">
+                    <h1 style="margin:0; font-size: 26px; color: #6b21a8; text-transform: uppercase; letter-spacing: 1px;">Rancangan Pengajaran Harian</h1>
+                    <h3 style="margin:8px 0 0 0; font-size: 16px; color: #374151;">SK Pendidikan Khas Miri</h3>
+                </div>
+                <div style="margin-bottom: 25px; display:flex; justify-content: space-between; font-size: 14px; background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                    <div><strong>MINGGU:</strong> ${wNum}</div>
+                    <div><strong>HARI:</strong> <span style="text-transform:uppercase">${hari}</span></div>
+                    <div><strong>TARIKH:</strong> ${dStr}</div>
+                </div>
+            `;
+            
+            if (slots.length === 0) {
+                html += `<div style="text-align:center; padding: 50px; font-style: italic; color: #6b7280; border: 1px dashed #d1d5db;">Tiada jadual PdPc direkodkan untuk hari ini.</div>`;
+            } else {
+                slots.forEach((s) => {
+                    html += `
+                    <div style="border: 1px solid #d1d5db; margin-bottom: 20px; page-break-inside: avoid; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #fdf4ff; padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #d1d5db; display:flex; justify-content: space-between; font-size: 13px; color: #6b21a8;">
+                            <span>MASA: ${s.time}</span>
+                            <span>KELAS: ${s.class}</span>
+                            <span>SUBJEK: ${s.subject}</span>
+                        </div>
+                        <div style="padding: 15px;">
+                            <table style="width:100%; border-collapse: collapse; font-size: 13px; color: #374151;">
+                                <tr>
+                                    <td style="width: 160px; font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">TEMA / TAJUK</td>
+                                    <td style="padding: 6px 0;">: Rujuk silibus / DSKP semasa bagi mata pelajaran ${s.subject}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">OBJEKTIF</td>
+                                    <td style="padding: 6px 0;">: Pada akhir PdPc, murid dapat menguasai sekurang-kurangnya 3 kemahiran asas ${s.subject} dengan bimbingan guru.</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">AKTIVITI PENGAJARAN</td>
+                                    <td style="padding: 6px 0;">: <br>1. Guru memberikan penerangan awal berkaitan tajuk.<br>2. Murid melakukan aktiviti berpandu bersama guru.<br>3. Sesi pengukuhan dan soal jawab secara berkumpulan/individu.</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold; padding: 6px 0; vertical-align: top; color: #111827;">REFLEKSI</td>
+                                    <td style="padding: 6px 0;">: ____ / ____ murid berjaya mencapai objektif pembelajaran hari ini. Tindakan susulan pemulihan/pengayaan diberikan jika perlu.</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+            document.body.appendChild(container);
+
+            try {
+                if (format === 'png') {
+                    const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                    const link = document.createElement('a');
+                    link.download = `RPH_Harian_${weekStr.replace(/\s+/g,'_')}_${hari}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } 
+                else if (format === 'pdf') {
+                    if(!window.jspdf) { showToast("Ralat: Modul PDF tidak ditemui."); document.body.removeChild(container); return; }
+                    const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    pdf.addImage(imgData, 'JPEG', 0, 10, pdfWidth, pdfHeight);
+                    const blob = pdf.output('blob');
+                    window.open(URL.createObjectURL(blob), '_blank');
+                }
+                else if (format === 'docx') {
+                    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>RPH Harian</title></head><body style='font-family: Arial, sans-serif;'>";
+                    const footer = "</body></html>";
+                    const blob = new Blob(['\ufeff', header + container.innerHTML + footer], { type: 'application/msword' });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `RPH_Harian_${weekStr.replace(/\s+/g,'_')}_${hari}.doc`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            } catch(e) {
+                console.error("Export Error: ", e);
+                showToast("Berlaku ralat semasa proses eksport.");
+            } finally {
+                document.body.removeChild(container);
+            }
+        }
+
         let currentRphBil = 'bil1';
         let currentActiveForms = [];
 
@@ -1025,8 +1673,8 @@
         function initRPHBuilder() {
             const selectMinggu = document.getElementById('rph-minggu');
             if(selectMinggu.options.length === 0) {
-                takwimData.forEach(t => {
-                    selectMinggu.appendChild(new Option(`${t.week} (${t.date})`, t.week));
+                takwimData.filter(t => t.type === 'week').forEach(t => {
+                    selectMinggu.appendChild(new Option(`Minggu ${t.week} (${t.date})`, `Minggu ${t.week}`));
                 });
                 selectMinggu.value = "Minggu 4"; 
             }
@@ -1048,9 +1696,7 @@
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const dd = String(d.getDate()).padStart(2, '0');
             
-            // Setting format YYYY-MM-DD for easy mapping with attendance system
             document.getElementById('rph-tarikh').value = `${yyyy}-${mm}-${dd}`;
-
             loadRPHClasses();
         }
 
@@ -1061,7 +1707,6 @@
             currentActiveForms = [];
 
             const slots = timetableData[currentRphBil].days[hariStr] || [];
-            
             const academicSlots = slots.filter(s => !['Persediaan', 'Perhimpunan', 'NILAM', 'Permata', 'B.Komputer', 'Kelab', 'Sukan', 'UB'].includes(s.class));
             
             const grouped = {};
@@ -1087,7 +1732,23 @@
                 currentActiveForms.push({ id: formId, ...item });
                 const timeString = item.times.join('\n');
                 
-                const dData = dskpData[item.subject] || dskpData["Bahasa Melayu"];
+                let dskpKey = item.subject;
+                if (item.subject === "Bahasa Melayu") {
+                    if (item.class.startsWith("3") || item.class.startsWith("4")) {
+                        dskpKey = "Bahasa Melayu Tahun 3";
+                    } else if (item.class.startsWith("5")) {
+                        dskpKey = "Bahasa Melayu Tahun 5";
+                    } else if (item.class.startsWith("6")) {
+                        dskpKey = "Bahasa Melayu Tahun 6";
+                    } else {
+                        dskpKey = "Bahasa Melayu Tahun 3";
+                    }
+                } else if (item.subject === "TMK") {
+                    dskpKey = "TMK";
+                } else if (item.subject === "Muzik") {
+                    dskpKey = "Muzik";
+                }
+                const dData = dskpData[dskpKey] || dskpData["Bahasa Melayu Tahun 3"];
 
                 let formHTML = `
                 <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6" id="${formId}">
@@ -1186,7 +1847,7 @@
 
         function generateRefleksiInputs(classCode, formId) {
             const students = studentsData[classCode] || [];
-            const dateStr = document.getElementById('rph-tarikh').value; // YYYY-MM-DD format
+            const dateStr = document.getElementById('rph-tarikh').value; 
             
             const attRecord = attendanceRecords.find(r => r.date === dateStr && r.classCode === classCode);
             const attMap = attRecord ? attRecord.attendanceMap : {};
@@ -1224,19 +1885,74 @@
             }
         }
 
+        // --- Context-Aware AI Generator ---
         function aiGenerateObjektif(formId) {
             const el = document.getElementById(`objektif-${formId}`);
-            el.value = "Pada akhir PdP, murid dapat mengecam sekurang-kurangnya 4 perkataan dan berisyarat dengan betul menggunakan kod tangan yang tepat.";
-            showToast("Bantuan AI: Objektif dijana.");
+            const temaSelect = document.getElementById(`tema-${formId}`);
+            const temaVal = temaSelect ? temaSelect.value : "tajuk pembelajaran";
+            el.value = `Pada akhir PdP, murid dapat menguasai kemahiran asas dan memahami konsep "${temaVal}" dengan tepat serta memberikan respons yang betul.`;
+            showToast("Bantuan AI: Objektif dijana secara dinamik.");
         }
 
         function aiGenerateAktiviti(formId, classCode) {
             const el = document.getElementById(`aktiviti-${formId}`);
-            let extra = classCode.includes('BD') ? "Guru tunjuk dan murid meniru kod tangan bagi setiap perkataan (Pendidikan Khas Pendengaran)." : 
-                       (classCode.includes('BP') ? "Guru menggunakan bahan maujud dan ulangan berperingkat (Pendidikan Khas Pembelajaran)." : "Guru membimbing murid dengan sentuhan atau alatan audio visual.");
+            const temaSelect = document.getElementById(`tema-${formId}`);
+            const temaVal = temaSelect ? temaSelect.value : "tajuk";
             
-            el.value = `1. Guru tunjuk gambar yang berkaitan dengan tajuk.\n2. Guru bersoal jawab dengan murid mengenai pemahaman awal.\n3. ${extra}\n4. Murid memadankan kad perkataan dengan gambar di papan putih.\n5. Latih tubi / Ulangan isyarat / sebutan bagi mengekalkan ingatan.`;
-            showToast("Bantuan AI: Aktiviti dijana mengikut kesesuaian kategori murid (Khas).");
+            let extra = classCode.includes('BD') ? "Guru membimbing murid menggunakan kod tangan/isyarat dan demonstrasi visual." : 
+                       (classCode.includes('BP') ? "Guru menggunakan bahan maujud dan latihan ulangan berperingkat." : "Guru memimpin perbincangan interaktif dan aktiviti berkumpulan.");
+            
+            el.value = `1. Guru memperkenalkan tajuk "${temaVal}" menggunakan bahan bantu mengajar.\n2. Guru bersoal jawab dengan murid untuk menguji kefahaman awal.\n3. ${extra}\n4. Murid melengkapkan lembaran kerja pengukuhan individu.\n5. Sesi rumusan dan penilaian pemahaman murid.`;
+            showToast("Bantuan AI: Aktiviti dijana khusus mengikut subjek dan kelas.");
+        }
+
+        function saveAllRphRecords() {
+            if(currentActiveForms.length === 0) {
+                showToast("Tiada borang RPH untuk disimpan.");
+                return;
+            }
+            const mingguStr = document.getElementById('rph-minggu').value;
+            const hariStr = document.getElementById('rph-hari').value;
+            const dateVal = document.getElementById('rph-tarikh').value;
+
+            currentActiveForms.forEach(formObj => {
+                const { id, class: classCode, subject, times } = formObj;
+                const isTangguh = document.getElementById(`chk-tangguh-${id}`).checked;
+                const tangguhReason = document.getElementById(`tangguh-reason-${id}`).value;
+                const tema = document.getElementById(`tema-${id}`) ? document.getElementById(`tema-${id}`).value : "";
+                const sk = document.getElementById(`sk-${id}`) ? document.getElementById(`sk-${id}`).value : "";
+                const sp = document.getElementById(`sp-${id}`) ? document.getElementById(`sp-${id}`).value : "";
+                const objektif = document.getElementById(`objektif-${id}`) ? document.getElementById(`objektif-${id}`).value : "";
+                const aktiviti = document.getElementById(`aktiviti-${id}`) ? document.getElementById(`aktiviti-${id}`).value : "";
+
+                const students = studentsData[classCode] || [];
+                const refleksiMap = {};
+                students.forEach(st => {
+                    const refEl = document.getElementById(`ref-${id}-${st.id}`);
+                    if(refEl) refleksiMap[st.id] = refEl.value;
+                });
+
+                savedRphRecords = savedRphRecords.filter(r => !(r.minggu === mingguStr && r.date === dateVal && r.classCode === classCode && r.subject === subject));
+
+                savedRphRecords.push({
+                    minggu: mingguStr,
+                    hari: hariStr,
+                    date: dateVal,
+                    classCode: classCode,
+                    subject: subject,
+                    times: times,
+                    tangguh: isTangguh,
+                    tangguhReason: tangguhReason,
+                    tema: tema,
+                    sk: sk,
+                    sp: sp,
+                    objektif: objektif,
+                    aktiviti: aktiviti,
+                    refleksiMap: refleksiMap
+                });
+            });
+
+            showToast("Semua rekod RPH berjaya disimpan dan diselaraskan ke modul Rekod RPH!");
         }
 
         async function generateAllRPHImages() {
@@ -1244,12 +1960,10 @@
                 alert("Tiada borang RPH untuk dijana.");
                 return;
             }
-            
             showToast(`Menjana ${currentActiveForms.length} fail PNG... Sila tunggu.`);
-            
             for(let i=0; i<currentActiveForms.length; i++) {
                 await exportSingleRPH(currentActiveForms[i]);
-                await new Promise(r => setTimeout(r, 600)); // Delay for canvas prep
+                await new Promise(r => setTimeout(r, 600)); 
             }
         }
 
@@ -1257,7 +1971,6 @@
             const { id, class: classCode, subject, times } = formObj;
             const isTangguh = document.getElementById(`chk-tangguh-${id}`).checked;
             
-            // Format Tarikh ke bentuk berpandukan gambar (DD.MM.YYYY)
             const dateVal = document.getElementById('rph-tarikh').value;
             const [y, m, d] = dateVal.split('-');
             
@@ -1332,9 +2045,6 @@
             }
         }
 
-        // ==========================================
-        // EXISTING FUNCTIONS (Jadual, Program, dll)
-        // ==========================================
         function openJadualDetail(bilKey) {
             document.getElementById('jadual-home-view').classList.add('hidden');
             document.getElementById('jadual-detail-view').classList.remove('hidden');
@@ -1368,7 +2078,6 @@
             });
         }
 
-        // Kehadiran Murid Logic
         function switchKehadiranTab(tabName) {
             const ambilView = document.getElementById('kehadiran-ambil-view');
             const senaraiView = document.getElementById('kehadiran-senarai-view');
@@ -1441,7 +2150,7 @@
             if (existingIdx >= 0) attendanceRecords[existingIdx].attendanceMap = attendanceMap;
             else attendanceRecords.push({ date: dateStr, classCode, attendanceMap });
 
-            showToast(`Kehadiran Kelas ${classCode} berjaya disimpan! Jika murid tak hadir, rekod RPH automatik menjadi TIDAK HADIR.`);
+            showToast(`Kehadiran Kelas ${classCode} berjaya disimpan!`);
         }
 
         function renderAttendanceRecordsList() {
@@ -1480,7 +2189,6 @@
             });
         }
 
-        // Program Cuti Logic
         function updateDateFromWeekAndDay() {
             const weekSelect = document.getElementById('pc-minggu').value;
             const hariSelect = document.getElementById('pc-hari').value;
@@ -1522,7 +2230,6 @@
             });
         }
 
-        // Rest of functionalities (Rekod Pergerakan, Personal dll) kept minimal for merging limit but fully functional
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').textContent = msg;
@@ -1530,7 +2237,6 @@
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
-        // Pergerakan
         function switchPergerakanTab(tabName) {
             if (tabName === 'borang') {
                 document.getElementById('pergerakan-borang-view').classList.remove('hidden');
@@ -1541,24 +2247,15 @@
             }
         }
         function savePergerakanRecord() { showToast("Rekod Pergerakan Disimpan!"); }
-        
-        // Personal
-        function switchPersonalTab(tabName) {
-            document.querySelectorAll('.personal-tab-content').forEach(el => el.classList.add('hidden'));
-            const activeView = document.getElementById(`personal-${tabName}-view`);
-            if (activeView) activeView.classList.remove('hidden');
-        }
-        function saveTugasLuar() { showToast("Tugas Luar Disimpan!"); }
-        function saveProgramSekolah() { showToast("Program Sekolah Disimpan!"); }
-        function saveTodoItem() { showToast("Tugasan Disimpan!"); }
 
         document.addEventListener('DOMContentLoaded', () => {
             const select = document.getElementById('pc-minggu');
-            takwimData.forEach(item => {
-                if (item.week) select.appendChild(new Option(`${item.week} (${item.date})`, item.week));
+            takwimData.filter(item => item.type === 'week').forEach(item => {
+                select.appendChild(new Option(`Minggu ${item.week} (${item.date})`, `Minggu ${item.week}`));
             });
             updateDateFromWeekAndDay();
             renderStudentAttendanceTable();
+            renderTakwimGrid();
         });
     </script>
 </body>
