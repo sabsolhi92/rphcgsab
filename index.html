@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- html2canvas and jsPDF for export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -89,9 +88,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rph-cikgu-sab-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyCEahQwKjEWWPNZs22IdXPOv9NZqde8zPE",
             authDomain: "rphcikgusab.firebaseapp.com",
             projectId: "rphcikgusab",
@@ -101,10 +102,41 @@
             measurementId: "G-KZEH1H7VRC"
         };
 
+        window.db = null;
+        window.auth = null;
+        window.currentUser = null;
+        window.cloudSynced = false;
+        
+        // Expose Firestore methods globally to avoid scope reference errors
+        window.collection = collection;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.addDoc = addDoc;
+        window.onSnapshot = onSnapshot;
+
         try {
             const app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app);
-            console.log("Firebase initialized successfully for RPH Cikgu Sab");
+            window.auth = getAuth(app);
+            window.db = getFirestore(app);
+
+            const initAuthAndSync = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(window.auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(window.auth);
+                    }
+                    window.currentUser = window.auth.currentUser;
+                    window.cloudSynced = true;
+                    console.log("Firebase Cloud Sync active, UID:", window.currentUser?.uid);
+                    if (typeof window.initCloudListeners === 'function') {
+                        window.initCloudListeners();
+                    }
+                } catch (err) {
+                    console.error("Firebase Auth error:", err);
+                }
+            };
+            initAuthAndSync();
         } catch (e) {
             console.error("Firebase init error:", e);
         }
@@ -399,12 +431,12 @@
                 </div>
             </div>
 
-            <!-- Kehadiran Murid Section -->
+            <!-- Kehadiran Murid Section (Updated with Class Tabs) -->
             <div id="content-kehadiran-murid" class="content-section hidden h-full flex flex-col space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Kehadiran Murid Mengikut Kelas & Tarikh</h3>
-                        <p class="text-sm text-gray-500">Pilih kelas dan tarikh PdPc yang sah berdasarkan jadual waktu rasmi.</p>
+                        <p class="text-sm text-gray-500">Pilih kelas menggunakan tab pantas dan tetapkan tarikh PdPc yang sah.</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <button onclick="switchKehadiranTab('ambil')" id="tab-ambil-btn" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white transition shadow-sm">Ambil Kehadiran</button>
@@ -413,14 +445,21 @@
                 </div>
 
                 <div id="kehadiran-ambil-view" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1 flex flex-col space-y-6 overflow-y-auto">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Pilih Kelas</label>
-                            <select id="att-class-select" onchange="onClassOrDateChanged()" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-primary font-bold text-primary">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Pilih Kelas (Tab Pantas)</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="switchAttClass('3BD')" id="att-tab-3BD" class="att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white transition shadow-sm">3BD</button>
+                                <button onclick="switchAttClass('4BL')" id="att-tab-4BL" class="att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">4BL</button>
+                                <button onclick="switchAttClass('5BD')" id="att-tab-5BD" class="att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">5BD (Pemulihan)</button>
+                                <button onclick="switchAttClass('6BD')" id="att-tab-6BD" class="att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">6BD (Pemulihan)</button>
+                                <button onclick="switchAttClass('6BP')" id="att-tab-6BP" class="att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">6BP</button>
+                            </div>
+                            <select id="att-class-select" class="hidden">
                                 <option value="3BD">3BD</option>
                                 <option value="4BL">4BL</option>
-                                <option value="5BD">5BD (Ada Pemulihan)</option>
-                                <option value="6BD">6BD (Ada Pemulihan)</option>
+                                <option value="5BD">5BD</option>
+                                <option value="6BD">6BD</option>
                                 <option value="6BP">6BP</option>
                             </select>
                         </div>
@@ -460,9 +499,24 @@
                     </div>
                 </div>
 
-                <div id="kehadiran-senarai-view" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1 flex flex-col space-y-4 overflow-y-auto">
-                    <h4 class="font-bold text-gray-800 text-base">Arkib Rekod Kehadiran Mengikut Tarikh & Kelas</h4>
-                    <div id="attendance-records-list" class="space-y-4">
+                <div id="kehadiran-senarai-view" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1 flex flex-col space-y-6 overflow-y-auto">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Pilih Kelas (Tab Pantas)</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="switchArchClass('3BD')" id="arch-tab-3BD" class="arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white transition shadow-sm">3BD</button>
+                                <button onclick="switchArchClass('4BL')" id="arch-tab-4BL" class="arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">4BL</button>
+                                <button onclick="switchArchClass('5BD')" id="arch-tab-5BD" class="arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">5BD (Pemulihan)</button>
+                                <button onclick="switchArchClass('6BD')" id="arch-tab-6BD" class="arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">6BD (Pemulihan)</button>
+                                <button onclick="switchArchClass('6BP')" id="arch-tab-6BP" class="arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition">6BP</button>
+                            </div>
+                            <input type="hidden" id="arch-class-val" value="3BD">
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-100 pt-4 flex-1 flex flex-col">
+                        <h4 class="font-bold text-gray-800 text-base mb-4">Arkib Rekod Kehadiran Mengikut Kelas</h4>
+                        <div id="attendance-records-list" class="space-y-4 flex-1">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -716,6 +770,8 @@
     </div>
 
     <script>
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rph-cikgu-sab-app';
+
         const timetableData = {
             bil1: {
                 title: "BIL 1",
@@ -1246,12 +1302,45 @@
         });
 
         let programRecords = [];
-        let attendanceRecords = [
-            { date: "2026-01-30", classCode: "6BD", attendanceMap: { 1: "HADIR", 2: "TAK HADIR" } }
-        ];
+        let attendanceRecords = [];
         let movementRecords = [];
         let savedRphRecords = [];
         let posterDataUrl = '';
+
+        window.initCloudListeners = function() {
+            if (!window.db || !window.onSnapshot || !window.collection) return;
+
+            window.onSnapshot(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'rph_records'), (snapshot) => {
+                savedRphRecords = [];
+                snapshot.forEach(docSnap => {
+                    savedRphRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+            }, (err) => { console.error("RPH sync error:", err); });
+
+            window.onSnapshot(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'attendance_records'), (snapshot) => {
+                attendanceRecords = [];
+                snapshot.forEach(docSnap => {
+                    attendanceRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderStudentAttendanceTable();
+                renderAttendanceRecordsList();
+            }, (err) => { console.error("Attendance sync error:", err); });
+
+            window.onSnapshot(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'program_records'), (snapshot) => {
+                programRecords = [];
+                snapshot.forEach(docSnap => {
+                    programRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+            }, (err) => { console.error("Program sync error:", err); });
+
+            window.onSnapshot(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'movement_records'), (snapshot) => {
+                movementRecords = [];
+                snapshot.forEach(docSnap => {
+                    movementRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderMovementRecordsList();
+            }, (err) => { console.error("Movement sync error:", err); });
+        };
 
         function updateTime() {
             const now = new Date();
@@ -1294,7 +1383,23 @@
             if (!container) return;
             if (movementRecords.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-6">Tiada rekod pergerakan atau keberadaan guru setakat ini.</p>';
+                document.getElementById('move-count-badge').textContent = '0 Rekod';
+                return;
             }
+            document.getElementById('move-count-badge').textContent = `${movementRecords.length} Rekod`;
+            container.innerHTML = movementRecords.map(r => `
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col gap-2">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="font-bold text-xs bg-purple-100 text-primary px-3 py-1 rounded-full">${r.category}</span>
+                        <span class="text-xs text-gray-500 font-semibold">${r.date}</span>
+                    </div>
+                    <div class="text-xs text-gray-700 grid grid-cols-2 gap-2 mt-1">
+                        <div><strong>Masa:</strong> ${r.time}</div>
+                        <div><strong>Lokasi:</strong> ${r.location}</div>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1"><strong>Keterangan:</strong> ${r.note}</p>
+                </div>
+            `).join('');
         }
 
         function renderTakwimGrid() {
@@ -1807,7 +1912,7 @@
                             <div>
                                 <div class="flex justify-between items-end mb-1">
                                     <label class="block text-xs font-bold text-gray-600 uppercase">Aktiviti Pengajaran</label>
-                                    <button type="button" onclick="aiGenerateAktiviti('${formId}', '${item.class}')" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 font-bold"><i class="fas fa-magic"></i> Bantuan AI (Gemini)</button>
+                                    <button type="button" onclick="aiGenerateAktiviti('${formId}', '${item.class}', '${item.subject}')" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 font-bold"><i class="fas fa-magic"></i> Bantuan AI (Gemini)</button>
                                 </div>
                                 <textarea id="aktiviti-${formId}" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-primary h-24 resize-none">1. </textarea>
                             </div>
@@ -1885,7 +1990,6 @@
             }
         }
 
-        // --- Context-Aware AI Generator ---
         function aiGenerateObjektif(formId) {
             const el = document.getElementById(`objektif-${formId}`);
             const temaSelect = document.getElementById(`tema-${formId}`);
@@ -1894,7 +1998,7 @@
             showToast("Bantuan AI: Objektif dijana secara dinamik.");
         }
 
-        function aiGenerateAktiviti(formId, classCode) {
+        function aiGenerateAktiviti(formId, classCode, subject) {
             const el = document.getElementById(`aktiviti-${formId}`);
             const temaSelect = document.getElementById(`tema-${formId}`);
             const temaVal = temaSelect ? temaSelect.value : "tajuk";
@@ -1902,11 +2006,12 @@
             let extra = classCode.includes('BD') ? "Guru membimbing murid menggunakan kod tangan/isyarat dan demonstrasi visual." : 
                        (classCode.includes('BP') ? "Guru menggunakan bahan maujud dan latihan ulangan berperingkat." : "Guru memimpin perbincangan interaktif dan aktiviti berkumpulan.");
             
-            el.value = `1. Guru memperkenalkan tajuk "${temaVal}" menggunakan bahan bantu mengajar.\n2. Guru bersoal jawab dengan murid untuk menguji kefahaman awal.\n3. ${extra}\n4. Murid melengkapkan lembaran kerja pengukuhan individu.\n5. Sesi rumusan dan penilaian pemahaman murid.`;
+            el.value = `1. Guru memperkenalkan tajuk "${temaVal}" untuk subjek ${subject} menggunakan bahan bantu mengajar.\n2. Guru bersoal jawab dengan murid untuk menguji kefahaman awal.\n3. ${extra}\n4. Murid melengkapkan lembaran kerja pengukuhan individu.\n5. Sesi rumusan dan penilaian pemahaman murid.`;
             showToast("Bantuan AI: Aktiviti dijana khusus mengikut subjek dan kelas.");
         }
 
-        function saveAllRphRecords() {
+        async function saveAllRphRecords() {
+            if (!window.db || !window.addDoc || !window.setDoc) { showToast("Sila tunggu sebentar, sedang menyambung ke awan..."); return; }
             if(currentActiveForms.length === 0) {
                 showToast("Tiada borang RPH untuk disimpan.");
                 return;
@@ -1915,44 +2020,53 @@
             const hariStr = document.getElementById('rph-hari').value;
             const dateVal = document.getElementById('rph-tarikh').value;
 
-            currentActiveForms.forEach(formObj => {
-                const { id, class: classCode, subject, times } = formObj;
-                const isTangguh = document.getElementById(`chk-tangguh-${id}`).checked;
-                const tangguhReason = document.getElementById(`tangguh-reason-${id}`).value;
-                const tema = document.getElementById(`tema-${id}`) ? document.getElementById(`tema-${id}`).value : "";
-                const sk = document.getElementById(`sk-${id}`) ? document.getElementById(`sk-${id}`).value : "";
-                const sp = document.getElementById(`sp-${id}`) ? document.getElementById(`sp-${id}`).value : "";
-                const objektif = document.getElementById(`objektif-${id}`) ? document.getElementById(`objektif-${id}`).value : "";
-                const aktiviti = document.getElementById(`aktiviti-${id}`) ? document.getElementById(`aktiviti-${id}`).value : "";
+            try {
+                for (const formObj of currentActiveForms) {
+                    const { id, class: classCode, subject, times } = formObj;
+                    const isTangguh = document.getElementById(`chk-tangguh-${id}`).checked;
+                    const tangguhReason = document.getElementById(`tangguh-reason-${id}`).value;
+                    const tema = document.getElementById(`tema-${id}`) ? document.getElementById(`tema-${id}`).value : "";
+                    const sk = document.getElementById(`sk-${id}`) ? document.getElementById(`sk-${id}`).value : "";
+                    const sp = document.getElementById(`sp-${id}`) ? document.getElementById(`sp-${id}`).value : "";
+                    const objektif = document.getElementById(`objektif-${id}`) ? document.getElementById(`objektif-${id}`).value : "";
+                    const aktiviti = document.getElementById(`aktiviti-${id}`) ? document.getElementById(`aktiviti-${id}`).value : "";
 
-                const students = studentsData[classCode] || [];
-                const refleksiMap = {};
-                students.forEach(st => {
-                    const refEl = document.getElementById(`ref-${id}-${st.id}`);
-                    if(refEl) refleksiMap[st.id] = refEl.value;
-                });
+                    const students = studentsData[classCode] || [];
+                    const refleksiMap = {};
+                    students.forEach(st => {
+                        const refEl = document.getElementById(`ref-${id}-${st.id}`);
+                        if(refEl) refleksiMap[st.id] = refEl.value;
+                    });
 
-                savedRphRecords = savedRphRecords.filter(r => !(r.minggu === mingguStr && r.date === dateVal && r.classCode === classCode && r.subject === subject));
+                    const rphData = {
+                        minggu: mingguStr,
+                        hari: hariStr,
+                        date: dateVal,
+                        classCode: classCode,
+                        subject: subject,
+                        times: times,
+                        tangguh: isTangguh,
+                        tangguhReason: tangguhReason,
+                        tema: tema,
+                        sk: sk,
+                        sp: sp,
+                        objektif: objektif,
+                        aktiviti: aktiviti,
+                        refleksiMap: refleksiMap
+                    };
 
-                savedRphRecords.push({
-                    minggu: mingguStr,
-                    hari: hariStr,
-                    date: dateVal,
-                    classCode: classCode,
-                    subject: subject,
-                    times: times,
-                    tangguh: isTangguh,
-                    tangguhReason: tangguhReason,
-                    tema: tema,
-                    sk: sk,
-                    sp: sp,
-                    objektif: objektif,
-                    aktiviti: aktiviti,
-                    refleksiMap: refleksiMap
-                });
-            });
-
-            showToast("Semua rekod RPH berjaya disimpan dan diselaraskan ke modul Rekod RPH!");
+                    const existing = savedRphRecords.find(r => r.minggu === mingguStr && r.date === dateVal && r.classCode === classCode && r.subject === subject);
+                    if (existing && existing.id) {
+                        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'rph_records', existing.id), rphData);
+                    } else {
+                        await window.addDoc(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'rph_records'), rphData);
+                    }
+                }
+                showToast("Semua rekod RPH berjaya disimpan dan disync ke awan!");
+            } catch (err) {
+                console.error("Save RPH error:", err);
+                showToast("Ralat semasa menyimpan ke awan.");
+            }
         }
 
         async function generateAllRPHImages() {
@@ -2098,7 +2212,33 @@
             }
         }
 
-        function onClassOrDateChanged() { renderStudentAttendanceTable(); }
+        function switchAttClass(classCode) {
+            const selectEl = document.getElementById('att-class-select');
+            if(selectEl) selectEl.value = classCode;
+
+            document.querySelectorAll('.att-class-tab').forEach(btn => {
+                btn.className = "att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition";
+            });
+            const activeBtn = document.getElementById(`att-tab-${classCode}`);
+            if(activeBtn) {
+                activeBtn.className = "att-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white transition shadow-sm";
+            }
+            renderStudentAttendanceTable();
+        }
+
+        function switchArchClass(classCode) {
+            const hiddenEl = document.getElementById('arch-class-val');
+            if(hiddenEl) hiddenEl.value = classCode;
+
+            document.querySelectorAll('.arch-class-tab').forEach(btn => {
+                btn.className = "arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-primary transition";
+            });
+            const activeBtn = document.getElementById(`arch-tab-${classCode}`);
+            if(activeBtn) {
+                activeBtn.className = "arch-class-tab px-5 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white transition shadow-sm";
+            }
+            renderAttendanceRecordsList();
+        }
 
         function renderStudentAttendanceTable() {
             const classCode = document.getElementById('att-class-select').value;
@@ -2135,7 +2275,8 @@
             });
         }
 
-        function saveAttendanceRecord() {
+        async function saveAttendanceRecord() {
+            if (!window.db || !window.addDoc || !window.setDoc) { showToast("Sila tunggu sebentar, sambungan awan sedang dimuat..."); return; }
             const classCode = document.getElementById('att-class-select').value;
             const dateStr = document.getElementById('att-date-input').value;
             const students = studentsData[classCode] || [];
@@ -2146,21 +2287,37 @@
                 radios.forEach(r => { if (r.checked) attendanceMap[st.id] = r.value; });
             });
 
-            const existingIdx = attendanceRecords.findIndex(r => r.date === dateStr && r.classCode === classCode);
-            if (existingIdx >= 0) attendanceRecords[existingIdx].attendanceMap = attendanceMap;
-            else attendanceRecords.push({ date: dateStr, classCode, attendanceMap });
-
-            showToast(`Kehadiran Kelas ${classCode} berjaya disimpan!`);
+            try {
+                const existing = attendanceRecords.find(r => r.date === dateStr && r.classCode === classCode);
+                if (existing && existing.id) {
+                    await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'attendance_records', existing.id), {
+                        date: dateStr, classCode, attendanceMap
+                    });
+                } else {
+                    await window.addDoc(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'attendance_records'), {
+                        date: dateStr, classCode, attendanceMap
+                    });
+                }
+                showToast(`Kehadiran Kelas ${classCode} berjaya disimpan dan disync ke awan!`);
+            } catch (err) {
+                console.error("Save Attendance error:", err);
+                showToast("Ralat menyimpan kehadiran.");
+            }
         }
 
         function renderAttendanceRecordsList() {
+            const currentArchClass = document.getElementById('arch-class-val') ? document.getElementById('arch-class-val').value : '3BD';
             const container = document.getElementById('attendance-records-list');
+            if(!container) return;
             container.innerHTML = '';
-            if (attendanceRecords.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 italic text-center py-8">Tiada rekod kehadiran murid yang disimpan setakat ini.</p>`;
+
+            const filteredRecords = attendanceRecords.filter(r => r.classCode === currentArchClass);
+
+            if (filteredRecords.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 italic text-center py-8">Tiada rekod kehadiran murid untuk kelas ${currentArchClass} setakat ini.</p>`;
                 return;
             }
-            const sorted = [...attendanceRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sorted = [...filteredRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
             sorted.forEach(rec => {
                 const students = studentsData[rec.classCode] || [];
                 let hadir = 0, takHadir = 0, pemulihan = 0;
@@ -2209,16 +2366,22 @@
             document.getElementById('preview-catatan-val').textContent = document.getElementById('pc-catatan').value || '[Sila masukkan catatan program atau cuti di sebelah kiri...]';
         }
 
-        function saveProgramRecord() {
-            programRecords.push({
-                minggu: document.getElementById('pc-minggu').value,
-                hari: document.getElementById('pc-hari').value,
-                tarikh: document.getElementById('pc-tarikh').value,
-                masa: document.getElementById('pc-masa').value,
-                catatan: document.getElementById('pc-catatan').value,
-                poster: posterDataUrl
-            });
-            showToast("Rekod Program/Cuti berjaya disimpan!");
+        async function saveProgramRecord() {
+            if (!window.db || !window.addDoc) { showToast("Sila tunggu sebentar..."); return; }
+            try {
+                await window.addDoc(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'program_records'), {
+                    minggu: document.getElementById('pc-minggu').value,
+                    hari: document.getElementById('pc-hari').value,
+                    tarikh: document.getElementById('pc-tarikh').value,
+                    masa: document.getElementById('pc-masa').value,
+                    catatan: document.getElementById('pc-catatan').value,
+                    poster: posterDataUrl
+                });
+                showToast("Rekod Program/Cuti berjaya disimpan ke awan!");
+            } catch (err) {
+                console.error("Save Program error:", err);
+                showToast("Ralat menyimpan rekod.");
+            }
         }
 
         function generateProgramImage() {
@@ -2246,7 +2409,23 @@
                 document.getElementById('pergerakan-senarai-view').classList.remove('hidden');
             }
         }
-        function savePergerakanRecord() { showToast("Rekod Pergerakan Disimpan!"); }
+
+        async function savePergerakanRecord() {
+            if (!window.db || !window.addDoc) { showToast("Sila tunggu sebentar..."); return; }
+            try {
+                await window.addDoc(window.collection(window.db, 'artifacts', appId, 'public', 'data', 'movement_records'), {
+                    date: document.getElementById('move-date').value,
+                    category: document.getElementById('move-category').value,
+                    time: document.getElementById('move-time').value,
+                    location: document.getElementById('move-location').value,
+                    note: document.getElementById('move-note').value
+                });
+                showToast("Rekod Pergerakan berjaya disimpan ke awan!");
+            } catch (err) {
+                console.error("Save Movement error:", err);
+                showToast("Ralat menyimpan rekod pergerakan.");
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const select = document.getElementById('pc-minggu');
@@ -2256,6 +2435,13 @@
             updateDateFromWeekAndDay();
             renderStudentAttendanceTable();
             renderTakwimGrid();
+            
+            // Trigger cloud listeners if Firebase auth is already ready
+            setTimeout(() => {
+                if (typeof window.initCloudListeners === 'function' && window.db) {
+                    window.initCloudListeners();
+                }
+            }, 1200);
         });
     </script>
 </body>
